@@ -1,125 +1,120 @@
-# KLV Bucket Queue
+# K-Level Bucket Queue
 
-Implementação de uma **fila de prioridade baseada em buckets multinível (KLV Bucket Queue)**, otimizada para algoritmos como **Dijkstra** com operações eficientes de `decrease_key`.
+Implementação de uma **K-Level Bucket Queue** para filas de prioridade monotônicas, otimizada para algoritmos como **Dijkstra** com pesos inteiros não negativos.
 
-## Inicialização
+## Importação
+
+Salve a implementação em um arquivo, por exemplo:
+
+```text
+bucket_queue.hpp
+```
+
+Inclua no código C++:
 
 ```cpp
-bucket_queue<pair<long long, unsigned int>> q(max_distance, num_vertices, num_levels);
+#include "bucket_queue.hpp"
+```
+
+ou, caso esteja em outro diretório:
+
+```cpp
+#include "path/to/bucket_queue.hpp"
+```
+
+## Instanciação
+
+```cpp
+using PQ = bucket_queue<std::pair<long long, unsigned int>>;
+
+long long max_distance = 1000000;
+int n = 100000;
+int levels = 3;
+
+PQ pq(max_distance, n, levels);
 ```
 
 ### Parâmetros
 
-- `max_distance`: maior distância esperada (`C`).
-- `num_vertices`: número máximo de vértices armazenados.
-- `num_levels`: quantidade de níveis da estrutura (geralmente `3` ou `4`).
+* `max_distance`: maior distância esperada (define o tamanho dos buckets).
+* `n`: número de vértices/elementos.
+* `levels`: número de níveis da estrutura (padrão recomendado: `3`).
 
 ---
 
-## Operações
+## Interface
 
 ### Inserir elemento
 
 ```cpp
-q.push({dist, vertex});
+pq.push({dist, vertex});
 ```
 
-Insere um vértice com prioridade `dist`.
-
----
-
-### Acessar o menor elemento
+### Menor elemento
 
 ```cpp
-auto [dist, vertex] = q.top();
+auto [dist, vertex] = pq.top();
 ```
-
-Retorna o elemento com menor prioridade sem removê-lo.
-
----
 
 ### Remover o menor elemento
 
 ```cpp
-q.pop();
+pq.pop();
 ```
 
-Remove o elemento retornado por `top()`.
-
----
-
-### Atualizar prioridade
+### Atualizar prioridade (`decrease_key`)
 
 ```cpp
-q.decrease_key(vertex, new_distance);
+pq.decrease_key(vertex, new_distance);
 ```
 
-Atualiza a distância de um vértice. Caso ele ainda não esteja na fila, ele é inserido automaticamente.
+Se o vértice ainda não estiver na fila, ele é inserido automaticamente.
 
----
-
-### Verificar se a fila está vazia
+### Verificar se está vazia
 
 ```cpp
-if (q.empty()) { ... }
+pq.empty();
 ```
 
----
-
-### Tamanho da fila
+### Número de elementos
 
 ```cpp
-size_t sz = q.size();
+pq.size();
 ```
 
----
-
-### Reutilizar a estrutura
+### Reinicializar
 
 ```cpp
-q.reset();
+pq.reset();
 ```
 
-Limpa todos os elementos mantendo a memória já alocada.
+Mantém a memória alocada e limpa toda a estrutura.
 
 ---
 
 ## Exemplo
 
 ```cpp
-bucket_queue<pair<long long, unsigned int>> q(C, n, 3);
+#include <bits/stdc++.h>
+#include "bucket_queue.hpp"
 
-q.push({0, source});
+using namespace std;
 
-while (!q.empty()) {
-    auto [du, u] = q.top();
-    q.pop();
+int main() {
+    using PQ = bucket_queue<pair<long long, unsigned int>>;
 
-    for (auto [v, w] : adj[u]) {
-        if (du + w < dist[v]) {
-            dist[v] = du + w;
-            q.decrease_key(v, dist[v]);
-        }
+    PQ pq(1000, 10, 3);
+
+    pq.push({10, 1});
+    pq.push({5, 2});
+    pq.push({20, 3});
+
+    while (!pq.empty()) {
+        auto [dist, v] = pq.top();
+        cout << v << " " << dist << '\n';
+        pq.pop();
     }
+
+    return 0;
 }
 ```
-
-## Complexidade
-
-| Operação | Complexidade |
-|----------|--------------|
-| `push` | Amortizada próxima de **O(1)** |
-| `top` | Amortizada próxima de **O(1)** |
-| `pop` | **O(1)** |
-| `decrease_key` | Amortizada próxima de **O(1)** |
-| `reset` | **O(n + k·d)** |
-
-Onde:
-
-- `n` = número de vértices;
-- `k` = número de níveis;
-- `d` = número de buckets por nível (`≈ (C+1)^(1/k)`).
-
-## Observação
-
-- A estrutura foi projetada para algoritmos de caminhos mínimos, especialmente **Dijkstra**, em grafos com pesos inteiros não negativos.
